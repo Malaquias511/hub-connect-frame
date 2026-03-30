@@ -1,19 +1,30 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CalendarDays, ClipboardCheck,
-  Newspaper, UserCog, Bell, Search, ChevronDown, Zap
+  Newspaper, UserCog, Bell, Search, ChevronDown, Zap, LogIn, LogOut, Lock
 } from "lucide-react";
 
-const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/employees", icon: Users, label: "Colaboradores" },
-  { to: "/leave", icon: CalendarDays, label: "Férias" },
-  { to: "/evaluations", icon: ClipboardCheck, label: "Avaliações" },
-  { to: "/hr-portal", icon: UserCog, label: "Portal RH" },
-  { to: "/intranet", icon: Newspaper, label: "Intranet" },
+const publicNavItems = [
+  { to: "/employees", icon: Users, label: "Colaboradores", requiresAuth: false },
+  { to: "/intranet", icon: Newspaper, label: "Intranet", requiresAuth: false },
+];
+
+const protectedNavItems = [
+  { to: "/", icon: LayoutDashboard, label: "Dashboard", requiresAuth: true },
+  { to: "/leave", icon: CalendarDays, label: "Férias", requiresAuth: true },
+  { to: "/evaluations", icon: ClipboardCheck, label: "Avaliações", requiresAuth: true },
+  { to: "/hr-portal", icon: UserCog, label: "Portal RH", requiresAuth: true },
 ];
 
 const AppLayout = () => {
+  const isAuth = localStorage.getItem("peoplehub_auth") === "true";
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("peoplehub_auth");
+    navigate("/intranet");
+  };
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
@@ -30,38 +41,90 @@ const AppLayout = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 mt-2 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/"}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
-                }`
-              }
-            >
-              <Icon className="w-5 h-5" />
-              {label}
-            </NavLink>
-          ))}
+        <nav className="flex-1 px-3 mt-2 space-y-4">
+          {/* Public section */}
+          <div>
+            <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted">Acesso Público</p>
+            <div className="space-y-1">
+              {publicNavItems.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5" />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+
+          {/* Protected section */}
+          <div>
+            <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted flex items-center gap-1">
+              <Lock className="w-3 h-3" /> Área Restrita
+            </p>
+            <div className="space-y-1">
+              {protectedNavItems.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === "/"}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      !isAuth
+                        ? "text-sidebar-foreground/30 cursor-not-allowed"
+                        : isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+                    }`
+                  }
+                  onClick={e => {
+                    if (!isAuth) {
+                      e.preventDefault();
+                      navigate("/login");
+                    }
+                  }}
+                >
+                  <Icon className="w-5 h-5" />
+                  {label}
+                  {!isAuth && <Lock className="w-3 h-3 ml-auto text-sidebar-foreground/20" />}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         </nav>
 
-        {/* User */}
+        {/* User / Auth */}
         <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center text-sm font-semibold text-sidebar-accent-foreground">
-              AM
+          {isAuth ? (
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-sidebar-accent flex items-center justify-center text-sm font-semibold text-sidebar-accent-foreground">
+                AM
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-sidebar-foreground truncate">Ana Mondlane</p>
+                <p className="text-xs text-sidebar-muted truncate">RH Manager</p>
+              </div>
+              <button onClick={handleLogout} className="p-1.5 rounded-lg hover:bg-sidebar-accent/50 transition-colors" title="Terminar sessão">
+                <LogOut className="w-4 h-4 text-sidebar-muted" />
+              </button>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">Ana Mondlane</p>
-              <p className="text-xs text-sidebar-muted truncate">RH Manager</p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-sidebar-muted" />
-          </div>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors"
+            >
+              <LogIn className="w-5 h-5" />
+              Iniciar Sessão
+            </button>
+          )}
         </div>
       </aside>
 
