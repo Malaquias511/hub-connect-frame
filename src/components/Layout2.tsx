@@ -11,8 +11,9 @@ const publicNavItems = [
 
 const protectedNavItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard", requiresAuth: true },
-  { to: "/leave2", icon: CalendarDays, label: "Plano de Férias", requiresAuth: true },
-
+  { to: "/leave2", icon: CalendarDays, label: "Férias", requiresAuth: true },
+  { to: "/evaluations", icon: ClipboardCheck, label: "Avaliações", requiresAuth: true },
+  { to: "/hr-portal", icon: UserCog, label: "Portal RH", requiresAuth: true },
 ];
 
 const AppLayout = () => {
@@ -21,7 +22,7 @@ const AppLayout = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("peoplehub_auth");
-    navigate("/login");
+    navigate("/intranet");
   };
 
   return (
@@ -41,7 +42,7 @@ const AppLayout = () => {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 mt-2 space-y-4">
-          {/* Public section 
+          {/* Public section */}
           <div>
             <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted">Acesso Público</p>
             <div className="space-y-1">
@@ -62,10 +63,9 @@ const AppLayout = () => {
                 </NavLink>
               ))}
             </div>
-          </div> */}
+          </div>
 
           {/* Protected section */}
-           
           <div>
             <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted flex items-center gap-1">
               <Lock className="w-3 h-3" /> Área Restrita

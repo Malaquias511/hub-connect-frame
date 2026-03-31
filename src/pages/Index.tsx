@@ -28,7 +28,7 @@ const Dashboard = () => (
   <div className="space-y-8">
     {/* Welcome */}
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-      <h1 className="text-2xl font-heading font-bold text-foreground">Bom dia, Ana 👋</h1>
+      <h1 className="text-2xl font-heading font-bold text-foreground">Olá, Rosária 👋</h1>
       <p className="text-muted-foreground mt-1">Bem-vinda ao PeopleHub. Aqui está o resumo de hoje.</p>
     </motion.div>
 

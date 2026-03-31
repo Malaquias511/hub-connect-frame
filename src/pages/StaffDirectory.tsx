@@ -230,6 +230,13 @@ function getBreadcrumb(units: OrgUnit[], targetId: string, path: OrgUnit[] = [])
   return null;
 }
 
+function flattenEmployees(units: OrgUnit[], parent?: OrgUnit): (Employee & { unit: OrgUnit })[] {
+    return units.flatMap(u => [
+      ...u.employees.map(e => ({ ...e, unit: u })),
+      ...(u.subUnits ? flattenEmployees(u.subUnits, u) : []),
+    ]);
+  }
+
 const Employees = () => {
   const [search, setSearch] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<OrgUnit | null>(null);
@@ -245,6 +252,7 @@ const Employees = () => {
         u.employees.some(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.code.toLowerCase().includes(search.toLowerCase()))
       )
     : [];
+    
 
   const toggleExpand = (id: string) => {
     setExpandedUnits(prev => {
@@ -321,12 +329,12 @@ const Employees = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="px-6 py-6 lg:px-10 lg:py-10 space-y-10">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-heading font-bold text-foreground">Estrutura Organizacional</h1>
-          <p className="text-muted-foreground mt-1">Hierarquia: PCA → Administradores → Directores → Coordenadores → Técnicos → Operacionais</p>
+          <h1 className="text-2xl font-heading font-bold text-foreground">Staff Directory</h1>
+         
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg font-medium">{allUnits.length} Unidades</span>
