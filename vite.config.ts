@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    base: process.env.VITE_BASE_PATH || "/hub-connect-frame"
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
