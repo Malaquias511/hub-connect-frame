@@ -581,7 +581,7 @@ const Employees = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground uppercase">Contacto Organizacional</p>
-                      <p>{selectedEmployee.phone}</p>
+                      <p>N/A</p>
                     </div>
                   </div>
 
@@ -591,8 +591,8 @@ const Employees = () => {
                       <p>{selectedEmployee.unit.location}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground uppercase">Andar / Região</p>
-                      <p>Por definir (podes adicionar este campo no futuro)</p>
+                      <p className="text-xs text-muted-foreground uppercase">Região</p>
+                      <p>Não disponível</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground uppercase">Email Pessoal</p>
@@ -600,7 +600,7 @@ const Employees = () => {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground uppercase">Contacto Pessoal</p>
-                      <p className="text-muted-foreground">Não disponível</p>
+                      <p className="text-muted-foreground">{selectedEmployee.phone}</p>
                     </div>
                   </div>
                 </div>
