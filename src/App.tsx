@@ -8,13 +8,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Index";
 import Employees from "./pages/Employees";
 import EmployeeProfile from "./pages/EmployeeProfile";
-import Leave from "./pages/Leave";
 import Evaluations from "./pages/Evaluations";
 import HRPortal from "./pages/HRPortal";
 import Intranet from "./pages/Intranet";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
-import PortalDocumentacao from "./pages/doc";
+import PortalDocumentacao from "./pages/Doc";
 import LeaveManagement from "./pages/Ferias"
 import EmployeesDirectory from "./pages/StaffDirectory"
 
