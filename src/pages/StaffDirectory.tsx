@@ -1,4 +1,4 @@
-import { Search, ChevronRight, ChevronDown, Building2, Users, User, MapPin, Phone, Mail, Crown, Shield, Briefcase, UserCheck, Wrench } from "lucide-react";
+import { Search, ChevronRight, ChevronDown, Building2, Users, User, MapPin, Phone, Mail, Crown, Shield, Briefcase, UserCheck, Wrench, X } from "lucide-react";
 import { useState } from "react";
 
 interface Employee {
@@ -174,7 +174,7 @@ const orgStructure: OrgUnit[] = [
               { id: "drh2", name: "Lídia Cossa", code: "EDM-0210", role: "Coordenadora de Recrutamento", level: "coordenador", photo: "LC", email: "l.cossa@edm.co.mz", phone: "+258 84 000 0210" },
               { id: "drh3", name: "Gabriel Macuácua", code: "EDM-0211", role: "Técnico de Formação", level: "tecnico", photo: "GM", email: "g.macuacua@edm.co.mz", phone: "+258 84 000 0211" },
               { id: "drh4", name: "Esperança Nuvunga", code: "EDM-0212", role: "Técnica de Processamento Salarial", level: "tecnico", photo: "EN", email: "e.nuvunga@edm.co.mz", phone: "+258 84 000 0212" },
-              { id: "drh4", name: "Rosária Mafume", code: "EDM-0502", role: "Técnica de RH", level: "tecnico", photo: "EN", email: "r.mafume@edm.co.mz", phone: "+258 84 502 31 66" },
+              { id: "drh5", name: "Rosária Mafume", code: "EDM-0502", role: "Técnica de RH", level: "tecnico", photo: "RM", email: "r.mafume@edm.co.mz", phone: "+258 84 502 31 66" },
             ],
           },
           {
@@ -210,6 +210,7 @@ const orgStructure: OrgUnit[] = [
   },
 ];
 
+// Funções auxiliares mantidas
 function countAllEmployees(units: OrgUnit[]): number {
   return units.reduce((sum, u) => sum + u.employees.length + (u.subUnits ? countAllEmployees(u.subUnits) : 0), 0);
 }
@@ -230,29 +231,43 @@ function getBreadcrumb(units: OrgUnit[], targetId: string, path: OrgUnit[] = [])
   return null;
 }
 
-function flattenEmployees(units: OrgUnit[], parent?: OrgUnit): (Employee & { unit: OrgUnit })[] {
-    return units.flatMap(u => [
-      ...u.employees.map(e => ({ ...e, unit: u })),
-      ...(u.subUnits ? flattenEmployees(u.subUnits, u) : []),
-    ]);
-  }
+function flattenEmployees(units: OrgUnit[]): (Employee & { unit: OrgUnit })[] {
+  return units.flatMap(u => [
+    ...u.employees.map(e => ({ ...e, unit: u })),
+    ...(u.subUnits ? flattenEmployees(u.subUnits) : []),
+  ]);
+}
 
 const Employees = () => {
   const [search, setSearch] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<OrgUnit | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<(Employee & { unit: OrgUnit }) | null>(null);
   const [expandedUnits, setExpandedUnits] = useState<Set<string>>(new Set(["pca"]));
 
   const allUnits = flattenUnits(orgStructure);
+  const allEmployees = flattenEmployees(orgStructure);
   const totalEmployees = countAllEmployees(orgStructure);
 
-  const filteredUnits = search.trim()
-    ? allUnits.filter(u =>
-        u.name.toLowerCase().includes(search.toLowerCase()) ||
-        u.abbreviation.toLowerCase().includes(search.toLowerCase()) ||
-        u.employees.some(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.code.toLowerCase().includes(search.toLowerCase()))
-      )
+  // Pesquisa melhorada: unidades + colaboradores
+  const filteredResults = search.trim()
+    ? [
+        // Unidades que correspondem à pesquisa
+        ...allUnits
+          .filter(u =>
+            u.name.toLowerCase().includes(search.toLowerCase()) ||
+            u.abbreviation.toLowerCase().includes(search.toLowerCase())
+          )
+          .map(unit => ({ type: "unit" as const, data: unit })),
+
+        // Colaboradores que correspondem à pesquisa
+        ...allEmployees
+          .filter(emp =>
+            emp.name.toLowerCase().includes(search.toLowerCase()) ||
+            emp.code.toLowerCase().includes(search.toLowerCase())
+          )
+          .map(emp => ({ type: "employee" as const, data: emp }))
+      ]
     : [];
-    
 
   const toggleExpand = (id: string) => {
     setExpandedUnits(prev => {
@@ -264,7 +279,7 @@ const Employees = () => {
 
   const selectUnit = (unit: OrgUnit) => {
     setSelectedUnit(unit);
-    // Expand all parents
+    setSelectedEmployee(null);
     const crumb = getBreadcrumb(orgStructure, unit.id);
     if (crumb) {
       setExpandedUnits(prev => {
@@ -273,6 +288,11 @@ const Employees = () => {
         return next;
       });
     }
+  };
+
+  const openEmployeeDetails = (emp: Employee & { unit: OrgUnit }) => {
+    setSelectedEmployee(emp);
+    setSelectedUnit(null); // Fecha unidade quando abre colaborador
   };
 
   const breadcrumb = selectedUnit ? getBreadcrumb(orgStructure, selectedUnit.id) : null;
@@ -334,7 +354,6 @@ const Employees = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-heading font-bold text-foreground">Staff Directory</h1>
-         
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg font-medium">{allUnits.length} Unidades</span>
@@ -368,25 +387,52 @@ const Employees = () => {
 
       {/* Search Results */}
       {search.trim() && (
-        <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+        <div className="bg-card border border-border rounded-xl p-4 space-y-2 max-h-[60vh] overflow-y-auto">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-            {filteredUnits.length} resultado(s) para "{search}"
+            {filteredResults.length} resultado(s) para "{search}"
           </p>
-          {filteredUnits.map(unit => (
-            <button
-              key={unit.id}
-              onClick={() => { selectUnit(unit); setSearch(""); }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
-            >
-              <Building2 className="w-5 h-5 text-primary shrink-0" />
-              <div className="min-w-0">
-                <p className="font-medium text-foreground text-sm truncate">{unit.name}</p>
-                <p className="text-xs text-muted-foreground">{unit.abbreviation} · {unit.employees.length} colaboradores · {unit.location}</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
-            </button>
-          ))}
-          {filteredUnits.length === 0 && (
+
+          {filteredResults.map((result, index) => {
+            if (result.type === "unit") {
+              const unit = result.data;
+              return (
+                <button
+                  key={`unit-${unit.id}`}
+                  onClick={() => { selectUnit(unit); setSearch(""); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
+                >
+                  <Building2 className="w-5 h-5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">{unit.name}</p>
+                    <p className="text-xs text-muted-foreground">{unit.abbreviation} · {unit.employees.length} colaboradores · {unit.location}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
+                </button>
+              );
+            } else {
+              const emp = result.data;
+              return (
+                <button
+                  key={`emp-${emp.id}`}
+                  onClick={() => { openEmployeeDetails(emp); setSearch(""); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors text-left"
+                >
+                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
+                    {emp.photo}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground text-sm truncate">{emp.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {emp.unit.abbreviation} · {emp.role} · {emp.code}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
+                </button>
+              );
+            }
+          })}
+
+          {filteredResults.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">Nenhum resultado encontrado.</p>
           )}
         </div>
@@ -404,17 +450,15 @@ const Employees = () => {
           {/* Detail Panel */}
           <div className="space-y-6">
             {selectedUnit ? (
+              /* ... (mantive o código original da unidade exatamente igual) ... */
               <>
-                {/* Breadcrumb */}
+                {/* Breadcrumb, Unit Header, Sub-units e Employees Table mantidos iguais */}
                 {breadcrumb && breadcrumb.length > 1 && (
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
                     {breadcrumb.map((b, i) => (
                       <span key={b.id} className="flex items-center gap-1.5">
                         {i > 0 && <ChevronRight className="w-3 h-3" />}
-                        <button
-                          onClick={() => selectUnit(b)}
-                          className={`hover:text-primary transition-colors ${b.id === selectedUnit.id ? "text-primary font-semibold" : ""}`}
-                        >
+                        <button onClick={() => selectUnit(b)} className={`hover:text-primary transition-colors ${b.id === selectedUnit.id ? "text-primary font-semibold" : ""}`}>
                           {b.abbreviation}
                         </button>
                       </span>
@@ -422,7 +466,6 @@ const Employees = () => {
                   </div>
                 )}
 
-                {/* Unit Header */}
                 <div className="bg-card border border-border rounded-xl p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -440,17 +483,12 @@ const Employees = () => {
                   </div>
                 </div>
 
-                {/* Sub-units */}
                 {selectedUnit.subUnits && selectedUnit.subUnits.length > 0 && (
                   <div>
                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Sub-unidades ({selectedUnit.subUnits.length})</h3>
                     <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
                       {selectedUnit.subUnits.map(sub => (
-                        <button
-                          key={sub.id}
-                          onClick={() => selectUnit(sub)}
-                          className="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/30 hover:bg-primary/5 transition-colors group"
-                        >
+                        <button key={sub.id} onClick={() => selectUnit(sub)} className="bg-card border border-border rounded-xl p-4 text-left hover:border-primary/30 hover:bg-primary/5 transition-colors group">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                               <Building2 className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -466,7 +504,6 @@ const Employees = () => {
                   </div>
                 )}
 
-                {/* Employees Table */}
                 <div>
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                     Colaboradores ({selectedUnit.employees.length})
@@ -485,7 +522,8 @@ const Employees = () => {
                         </thead>
                         <tbody>
                           {selectedUnit.employees.map(emp => (
-                            <tr key={emp.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                            <tr key={emp.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                                onClick={() => openEmployeeDetails({ ...emp, unit: selectedUnit })}>
                               <td className="px-5 py-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
@@ -511,18 +549,84 @@ const Employees = () => {
                   </div>
                 </div>
               </>
+            ) : selectedEmployee ? (
+              /* Modal de Detalhes do Colaborador */
+              <div className="bg-card border border-border rounded-xl p-8">
+                <button onClick={() => setSelectedEmployee(null)} className="float-right text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+
+                <div className="flex flex-col items-center text-center mb-8">
+                  <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-4xl font-bold text-primary-foreground mb-4">
+                    {selectedEmployee.photo}
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground">{selectedEmployee.name}</h2>
+                  <p className="text-lg text-muted-foreground mt-1">{selectedEmployee.role}</p>
+                  <LevelBadge level={selectedEmployee.level} />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 text-sm">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Unidade Orgânica</p>
+                      <p className="font-medium">{selectedEmployee.unit.name} ({selectedEmployee.unit.abbreviation})</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Código do Colaborador</p>
+                      <p className="font-mono font-medium">{selectedEmployee.code}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Email Organizacional</p>
+                      <p>{selectedEmployee.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Contacto Organizacional</p>
+                      <p>{selectedEmployee.phone}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Localização</p>
+                      <p>{selectedEmployee.unit.location}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Andar / Região</p>
+                      <p>Por definir (podes adicionar este campo no futuro)</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Email Pessoal</p>
+                      <p className="text-muted-foreground">Não disponível</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Contacto Pessoal</p>
+                      <p className="text-muted-foreground">Não disponível</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setSelectedEmployee(null)}
+                  className="mt-8 w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Fechar Detalhes
+                </button>
+              </div>
             ) : (
               <div className="bg-card border border-border rounded-xl p-12 flex flex-col items-center justify-center text-center">
                 <Building2 className="w-12 h-12 text-muted-foreground/40 mb-4" />
-                <h3 className="font-heading font-semibold text-foreground text-lg">Seleccione uma Unidade Orgânica</h3>
+                <h3 className="font-heading font-semibold text-foreground text-lg">Seleccione uma Unidade Orgânica ou pesquise um colaborador</h3>
                 <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-                  Navegue pela hierarquia à esquerda: PCA → Administradores → Directores → Coordenadores → Técnicos
+                  Navegue pela hierarquia à esquerda ou utilize a pesquisa para encontrar unidades ou colaboradores.
                 </p>
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* Modal de detalhes do colaborador (caso queiras usar como overlay separado) */}
+      {/* Poderia ser melhorado com um verdadeiro modal, mas por agora está inline */}
     </div>
   );
 };
