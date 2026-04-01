@@ -1,395 +1,389 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Newspaper, Calendar, FileText, Search, Clock, ChevronRight,
-  BarChart3, Table2, Mail, Megaphone, BookOpen, Download, Star, ArrowRight,
-  Zap, Users, ClipboardCheck, CalendarDays
+  Users, Newspaper, Calendar, FileText, Search, Clock, ChevronRight, ChevronLeft,
+  Award, Star, TrendingUp, Shield, Lightbulb, Heart, BookOpen, Megaphone,
+  ArrowRight, Zap, ClipboardCheck, CalendarDays, Target, UserCheck, Bell, Mail,
+  UserMinus, Gift, Mic, AlertTriangle, TrendingUp as TrendIcon,
+  Contact2Icon,
+  Contact
 } from "lucide-react";
-import edmBanner from "@/assets/edm-banner.jpg";
-import edmNews1 from "@/assets/edm-news1.jpg";
-import edmNews2 from "@/assets/edm-news2.jpg";
 
 const bannerSlides = [
-  { title: "Programa de Electrificação Rural 2026", subtitle: "Levando energia a 500 comunidades em todo o Moçambique", cta: "Saber mais", image: edmBanner },
-  { title: "Resultados do 1º Trimestre", subtitle: "Crescimento de 12% na receita — leia o relatório completo", cta: "Ver relatório", image: edmNews1 },
-  { title: "Energia Renovável em Expansão", subtitle: "Novos projectos solares e eólicos em 5 províncias", cta: "Explorar", image: edmNews2 },
+  {
+    title: "Bem-vindo à PeopleHub",
+    subtitle: "Cuidando das nossas pessoas • Desenvolvendo o nosso talento • Construindo o futuro juntos",
+    cta: "Explorar iniciativas 2026",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070",
+  },
+  {
+    title: "Funcionário do Mês - Março 2026",
+    subtitle: "Parabéns à Eng.ª Carla M. Nhantumbo pela excelência e dedicação exemplar!",
+    cta: "Ver perfil e história",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=2076",
+  },
+  {
+    title: "HR Talks: Edição Abril",
+    subtitle: "‘Liderança com Propósito’ – com o Diretor de Operações",
+    cta: "Inscrever-se agora",
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070",
+  },
+];
+
+const kpis = [
+  { label: "Colaboradores", value: "2.847", change: "+12 este mês", icon: Users, color: "text-blue-600" },
+  { label: "Taxa de Retenção", value: "94%", change: "+2%", icon: Heart, color: "text-rose-500" },
+  { label: "Satisfação Interna", value: "88%", change: "+5%", icon: Star, color: "text-amber-500" },
+  { label: "Engagement Score", value: "82%", change: "+7%", icon: TrendIcon, color: "text-emerald-600" },
+  { label: "Treinamentos", value: "47", change: "este trimestre", icon: BookOpen, color: "text-violet-600" },
 ];
 
 const quickTools = [
-  { icon: CalendarDays, label: "Plano de Férias", href: "/leave", color: "bg-info/10 text-info" },
-  { icon: ClipboardCheck, label: "Avaliação de Desempenho", href: "/evaluations", color: "bg-success/10 text-success" },
-  { icon: Users, label: "Colaboradores", href: "/employees", color: "bg-primary/10 text-primary" },
-  { icon: Table2, label: "Tabela de Funções", href: "#", color: "bg-secondary/20 text-secondary-foreground" },
-  { icon: BarChart3, label: "Dashboard", href: "/", color: "bg-destructive/10 text-destructive" },
-  { icon: Mail, label: "Newsletter", href: "#", color: "bg-accent text-accent-foreground" },
+  { icon: CalendarDays, label: "Plano de Férias", href: "#/leave2", color: "bg-blue-100 text-blue-700" },
+  { icon: ClipboardCheck, label: "Avaliação de Desempenho", href: "#", color: "bg-emerald-100 text-emerald-700" },
+  { icon: Contact, label: "Staff Directory", href: "#/staff", color: "bg-violet-100 text-violet-700" },
+  { icon: Heart, label: "Bem-Estar & Saúde", href: "#", color: "bg-rose-100 text-rose-700" },
+  { icon: Award, label: "Reconhecimentos", href: "#", color: "bg-amber-100 text-amber-700" },
+  { icon: FileText, label: "Portal de Documentos", href: "#/doc", color: "bg-sky-100 text-sky-700" },
 ];
 
-const news = [
-  { title: "EDM lança programa de electrificação rural", excerpt: "Novo programa visa levar electricidade a 500 comunidades rurais em Moçambique até 2028. O projecto envolve investimentos significativos em infra-estrutura.", date: "28 Mar 2026", category: "Institucional", image: edmBanner, featured: true },
-  { title: "Resultados do 1º Trimestre 2026", excerpt: "A empresa registou um crescimento de 12% na receita comparado com o período homólogo.", date: "25 Mar 2026", category: "Finanças", image: edmNews1, featured: false },
-  { title: "Formação em Segurança no Trabalho", excerpt: "Inscrições abertas para a formação obrigatória em segurança e higiene no trabalho.", date: "22 Mar 2026", category: "RH", image: null, featured: false },
-  { title: "Novo sistema de gestão de RH", excerpt: "PeopleHub: a nova plataforma digital de recursos humanos da EDM está agora disponível para todos.", date: "20 Mar 2026", category: "TI", image: null, featured: false },
-  { title: "Expansão da rede em Nampula", excerpt: "Projecto de expansão da rede eléctrica na província de Nampula avança conforme planeado.", date: "18 Mar 2026", category: "Operações", image: edmNews2, featured: false },
-  { title: "Dia Internacional da Mulher na EDM", excerpt: "EDM celebrou o Dia Internacional da Mulher com actividades de reconhecimento e workshops.", date: "08 Mar 2026", category: "Social", image: null, featured: false },
+const proximosEventos = [
+  { title: "Workshop: Inteligência Emocional para Líderes", data: "08 Abr 2026", local: "Auditório Principal" },
+  { title: "Dia da Família EDM", data: "18 Abr 2026", local: "Complexo Desportivo" },
+  { title: "Formação: Segurança Psicológica", data: "22 Abr 2026", local: "Online" },
 ];
 
-const newsletters = [
-  { title: "Newsletter EDM #24 — Março 2026", date: "01 Mar 2026", size: "1.8 MB" },
-  { title: "Newsletter EDM #23 — Fevereiro 2026", date: "01 Fev 2026", size: "2.1 MB" },
-  { title: "Newsletter EDM #22 — Janeiro 2026", date: "01 Jan 2026", size: "1.5 MB" },
+const hrTalks = [
+  { title: "HR Talks – Liderança com Propósito", data: "10 Abr 2026", speaker: "Eng. António Macamo" },
+  { title: "HR Talks – Equilíbrio entre Vida e Trabalho", data: "25 Abr 2026", speaker: "Dra. Isabel Chemane" },
 ];
 
-const events = [
-  { title: "Dia do Trabalhador", date: "01 Mai 2026", type: "Feriado" },
-  { title: "Workshop de Liderança", date: "10 Abr 2026", type: "Formação" },
-  { title: "Reunião Geral Anual", date: "15 Abr 2026", type: "Evento" },
-  { title: "Team Building — Dep. de TI", date: "22 Abr 2026", type: "Social" },
-];
-
-const documents = [
-  { name: "Regulamento Interno 2026", type: "PDF", size: "2.4 MB" },
-  { name: "Manual de Segurança", type: "PDF", size: "5.1 MB" },
-  { name: "Política de Férias", type: "PDF", size: "890 KB" },
-  { name: "Código de Conduta", type: "PDF", size: "1.2 MB" },
-  { name: "Tabela de Funções 2026", type: "XLSX", size: "780 KB" },
-  { name: "Organograma EDM 2026", type: "PDF", size: "3.8 MB" },
-];
-
-const pastEvents = [
-  { title: "Festa de Natal 2025", date: "20 Dez 2025" },
-  { title: "Conferência Energética SADC", date: "15 Nov 2025" },
-  { title: "Formação em Excel Avançado", date: "01 Out 2025" },
-];
-
-const categoryColors: Record<string, string> = {
-  Institucional: "bg-primary/10 text-primary",
-  Finanças: "bg-success/10 text-success",
-  RH: "bg-secondary/20 text-secondary-foreground",
-  TI: "bg-info/10 text-info",
-  Operações: "bg-warning/20 text-warning-foreground",
-  Social: "bg-accent text-accent-foreground",
+const safetyStandDown = {
+  title: "Parada de Segurança – Abril 2026",
+  tema: "Ergonomia e Prevenção de Lesões Musculares",
+  data: "15 Abr 2026 | 10:00 - 11:00",
+  descricao: "Momento obrigatório de paragem para reforçar boas práticas de segurança.",
 };
 
-const horizontalMenuItems = [
-  { label: "Início", active: true },
-  { label: "Notícias" },
-  { label: "Eventos" },
-  { label: "Documentos" },
-  { label: "Newsletters" },
-  { label: "Contactos" },
+const proximosReforma = [
+  { nome: "Sr. Manuel A. Cossa", departamento: "Manutenção", idade: "62 anos", data: "Outubro 2027", status: "Planeamento de sucessão iniciado" },
+  { nome: "Dra. Fátima M. Sulemane", departamento: "Finanças", idade: "61 anos", data: "Janeiro 2028", status: "Reunião agendada" },
+];
+
+const trabalhosAndamento = [
+  { titulo: "Revisão do Plano de Sucessão", estado: "Em revisão", responsavel: "Dra. Sofia Langa", progresso: 75 },
+  { titulo: "Novo Sistema de Avaliação 360°", estado: "Em testes", responsavel: "Eng. Paulo Chemane", progresso: 45 },
+  { titulo: "Programa de Mentoria 2026", estado: "Em execução", responsavel: "Equipe de Desenvolvimento", progresso: 60 },
+];
+
+const employeeVoice = [
+  "Sugestão: Criar mais espaços de descompressão nas províncias.",
+  "Feedback positivo: O novo programa de bem-estar está a fazer diferença!",
 ];
 
 const Intranet = () => {
   const [bannerIdx, setBannerIdx] = useState(0);
-  const [docSearch, setDocSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("Início");
+  const [globalSearch, setGlobalSearch] = useState("");
 
-  const filteredDocs = docSearch.trim()
-    ? documents.filter(d => d.name.toLowerCase().includes(docSearch.toLowerCase()))
-    : documents;
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerIdx((prev) => (prev + 1) % bannerSlides.length);
+    }, 6500);
+    return () => clearInterval(interval);
+  }, []);
 
   const currentBanner = bannerSlides[bannerIdx];
-  const featuredNews = news.find(n => n.featured);
-  const regularNews = news.filter(n => !n.featured);
 
   return (
-    <div className="space-y-0 -m-8">
-      {/* Horizontal Navigation Bar */}
-      <div className="bg-primary px-8 sticky top-16 z-10">
-        <div className="flex items-center gap-1 overflow-x-auto">
-          {horizontalMenuItems.map(item => (
-            <button
-              key={item.label}
-              onClick={() => setActiveTab(item.label)}
-              className={`px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors relative ${
-                activeTab === item.label
-                  ? "text-primary-foreground"
-                  : "text-primary-foreground/60 hover:text-primary-foreground/80"
-              }`}
-            >
-              {item.label}
-              {activeTab === item.label && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-secondary rounded-t" />
-              )}
-            </button>
-          ))}
-          <div className="ml-auto flex items-center">
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-primary-foreground/40" />
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+      {/* Nav */}
+      <nav className="bg-[#003087] text-white sticky top-0 z-50 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center overflow-hidden">
+              <img src="https://cdn.prod.website-files.com/657db7118d8a314907c9c6a2/657de198c680bd80d798f5fc_EDM_OG.png" alt="Logo EDM" className="w-8 h-8 object-contain" />
+            </div>
+            <div>
+              
+             
+            </div>
+          </div>
+
+          <div className="flex gap-8 text-sm font-medium">
+            {["Início", "Notícias", "Eventos", "Desenvolvimento", "Bem-Estar", "Documentos", "Contactos"].map((item) => (
+              <button key={item} className="hover:text-[#FF9F1C] transition-colors">{item}</button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="relative w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/60" />
               <input
                 type="text"
-                placeholder="Pesquisar na intranet..."
-                className="pl-9 pr-4 py-1.5 w-56 rounded-full bg-primary-foreground/10 text-xs text-primary-foreground placeholder:text-primary-foreground/40 border-0 outline-none focus:bg-primary-foreground/20 transition-colors"
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                placeholder="Pesquisar na PeopleHub..."
+                className="w-full bg-white/10 border border-white/20 pl-11 pr-4 py-3 rounded-2xl text-sm placeholder:text-white/60 focus:outline-none focus:border-[#FF9F1C]"
               />
+            </div>
+            <div className="relative w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center cursor-pointer hover:bg-white/20">
+              <Bell className="w-5 h-5" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF9F1C] rounded-full flex items-center justify-center text-[10px] font-bold">3</div>
             </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Hero Banner */}
-      <div className="relative h-[360px] overflow-hidden">
-        <img
-          src={currentBanner.image}
-          alt={currentBanner.title}
-          className="w-full h-full object-cover"
-          width={1920}
-          height={512}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/60 to-transparent" />
-        <div className="absolute inset-0 flex items-center px-12">
-          <div className="max-w-lg">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider mb-4">
-              <Megaphone className="w-3 h-3" /> Destaque
-            </span>
-            <h1 className="text-3xl font-heading font-bold text-white leading-tight">{currentBanner.title}</h1>
-            <p className="text-white/80 mt-3 text-base">{currentBanner.subtitle}</p>
-            <button className="mt-6 px-6 py-2.5 bg-secondary text-secondary-foreground rounded-lg font-semibold text-sm hover:bg-secondary/90 transition-colors inline-flex items-center gap-2">
-              {currentBanner.cta} <ArrowRight className="w-4 h-4" />
+      {/* Hero Banner dinâmico */}
+      <div className="relative h-[460px] overflow-hidden">
+        <img src={currentBanner.image} alt={currentBanner.title} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#003087]/95 to-transparent" />
+        
+        <div className="absolute inset-0 flex items-center px-8 md:px-16 max-w-7xl mx-auto">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 bg-[#FF9F1C] text-[#003087] px-5 py-1.5 rounded-full text-sm font-semibold mb-6 animate-pulse">
+              <Megaphone className="w-5 h-5" /> EM DESTAQUE
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold leading-tight text-white mb-6">{currentBanner.title}</h1>
+            <p className="text-xl text-white/90 mb-10">{currentBanner.subtitle}</p>
+            <button className="px-10 py-4 bg-[#FF9F1C] hover:bg-amber-400 text-[#003087] font-semibold rounded-2xl flex items-center gap-3 text-lg transition-all active:scale-95">
+              {currentBanner.cta} <ArrowRight className="w-6 h-6" />
             </button>
           </div>
         </div>
-        {/* Banner dots */}
-        <div className="absolute bottom-6 right-12 flex gap-2">
+
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3">
           {bannerSlides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setBannerIdx(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${i === bannerIdx ? "bg-secondary w-8" : "bg-white/40 hover:bg-white/60"}`}
-            />
+            <button key={i} onClick={() => setBannerIdx(i)} className={`w-3 h-3 rounded-full transition-all ${i === bannerIdx ? "bg-[#FF9F1C] scale-125" : "bg-white/60"}`} />
           ))}
         </div>
       </div>
 
-      {/* Quick Tools Bar */}
-      <div className="bg-card border-b border-border px-8 py-5">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider shrink-0 mr-2">Acesso Rápido:</span>
-          {quickTools.map(tool => {
+      {/* KPIs mais ricos */}
+      <div className="bg-white dark:bg-zinc-900 py-8 border-b">
+        <div className="max-w-7xl mx-auto px-8 grid grid-cols-2 md:grid-cols-5 gap-6">
+          {kpis.map((kpi, i) => (
+            <div key={i} className="flex items-center gap-5 bg-zinc-50 dark:bg-zinc-800 p-6 rounded-3xl hover:shadow-md transition-all">
+              <kpi.icon className={`w-12 h-12 ${kpi.color}`} />
+              <div>
+                <p className="text-4xl font-bold tracking-tighter">{kpi.value}</p>
+                <p className="text-zinc-600 dark:text-zinc-400">{kpi.label}</p>
+                <p className={`text-sm font-medium ${kpi.color}`}>{kpi.change}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Acesso Rápido */}
+      <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="flex items-center gap-3 mb-8">
+          <Zap className="text-[#FF9F1C] w-7 h-7" />
+          <h2 className="text-2xl font-bold">Acesso Rápido</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
+          {quickTools.map((tool, i) => {
             const Icon = tool.icon;
             return (
-              <a
-                key={tool.label}
-                href={tool.href}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors shrink-0"
-              >
-                <span className={`w-7 h-7 rounded-md flex items-center justify-center ${tool.color}`}>
-                  <Icon className="w-3.5 h-3.5" />
-                </span>
-                <span className="text-sm font-medium text-foreground">{tool.label}</span>
+              <a key={i} href={tool.href} className="group bg-white dark:bg-zinc-900 border hover:border-[#FF9F1C] p-8 rounded-3xl transition-all hover:-translate-y-2 hover:shadow-xl flex flex-col items-center text-center gap-5">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 ${tool.color}`}>
+                  <Icon className="w-9 h-9" />
+                </div>
+                <span className="font-semibold">{tool.label}</span>
               </a>
             );
           })}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="px-8 py-8 space-y-8">
-        {/* Featured + Latest News */}
+      <div className="max-w-7xl mx-auto px-8 pb-20 space-y-20">
+        {/* Notícias e Circulares */}
         <section>
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-heading font-bold text-foreground text-lg flex items-center gap-2">
-              <Newspaper className="w-5 h-5 text-primary" /> Notícias e Comunicados
-            </h2>
-            <button className="text-sm text-primary font-medium hover:underline flex items-center gap-1">
-              Ver todas <ChevronRight className="w-4 h-4" />
-            </button>
+          <div className="flex justify-between items-end mb-8">
+            <h2 className="text-3xl font-bold flex items-center gap-3"><Newspaper className="text-[#003087]" /> Notícias e Circulares</h2>
+            <button className="text-[#003087] flex items-center gap-2 hover:underline">Ver todas <ChevronRight /></button>
           </div>
-
-          <div className="grid lg:grid-cols-[1fr_1fr] gap-6">
-            {/* Featured Article */}
-            {featuredNews && (
-              <div className="bg-card rounded-xl border border-border overflow-hidden card-hover group cursor-pointer">
-                {featuredNews.image && (
-                  <div className="h-52 overflow-hidden">
-                    <img src={featuredNews.image} alt={featuredNews.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" width={800} height={512} />
-                  </div>
-                )}
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[featuredNews.category] || "bg-muted text-muted-foreground"}`}>
-                      {featuredNews.category}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-secondary-foreground bg-secondary/20 px-2 py-0.5 rounded-full font-medium">
-                      <Star className="w-3 h-3" /> Destaque
-                    </span>
-                  </div>
-                  <h3 className="font-heading font-bold text-foreground text-lg leading-snug">{featuredNews.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-2">{featuredNews.excerpt}</p>
-                  <p className="text-xs text-muted-foreground mt-4">{featuredNews.date}</p>
-                </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { title: "Novo Programa de Desenvolvimento de Liderança 2026", date: "28 Mar 2026", category: "Desenvolvimento" },
+              { title: "Campanha de Vacinação – 2ª fase", date: "25 Mar 2026", category: "Saúde" },
+              { title: "Alterações no Regulamento de Férias", date: "20 Mar 2026", category: "Circular" },
+            ].map((item, i) => (
+              <div key={i} className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border hover:shadow-md transition-all">
+                <div className="text-xs text-[#FF9F1C] font-medium mb-2">{item.category}</div>
+                <h4 className="font-semibold text-lg mb-3">{item.title}</h4>
+                <p className="text-sm text-zinc-500">{item.date}</p>
               </div>
-            )}
-
-            {/* News Grid */}
-            <div className="grid gap-3">
-              {regularNews.slice(0, 4).map((n, i) => (
-                <div key={i} className="bg-card rounded-xl border border-border p-4 flex gap-4 card-hover cursor-pointer">
-                  {n.image ? (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0">
-                      <img src={n.image} alt={n.title} className="w-full h-full object-cover" loading="lazy" width={80} height={80} />
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <Newspaper className="w-6 h-6 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${categoryColors[n.category] || "bg-muted text-muted-foreground"}`}>
-                        {n.category}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{n.date}</span>
-                    </div>
-                    <h4 className="font-heading font-semibold text-foreground text-sm leading-snug">{n.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.excerpt}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </section>
 
-        {/* Three Column Section */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Upcoming Events */}
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="bg-primary/5 px-6 py-4 border-b border-border">
-              <h3 className="font-heading font-bold text-foreground flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" /> Próximos Eventos
-              </h3>
-            </div>
-            <div className="p-4 space-y-2">
-              {events.map((e, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center text-xs shrink-0">
-                    <span className="font-bold text-primary text-sm">{e.date.split(" ")[0]}</span>
-                    <span className="text-muted-foreground text-[10px] uppercase">{e.date.split(" ")[1]}</span>
-                  </div>
+        {/* Funcionário do Mês + Próximos Eventos + HR Talks */}
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* Funcionário do Mês */}
+          <div className="lg:col-span-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-zinc-900 dark:to-amber-950 border border-amber-200 rounded-3xl p-10 text-center">
+            <Award className="w-16 h-16 text-amber-500 mx-auto mb-6" />
+            <div className="mx-auto w-32 h-32 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-7xl mb-6 shadow-inner">👏</div>
+            <h3 className="text-2xl font-bold">Funcionário do Mês</h3>
+            <p className="text-xl font-semibold text-amber-700 mt-1">Eng.ª Carla M. Nhantumbo</p>
+            <p className="text-zinc-600 dark:text-zinc-400">Departamento de Formação • Maputo</p>
+          </div>
+
+          {/* Próximos Eventos + HR Talks */}
+          <div className="lg:col-span-5 bg-white dark:bg-zinc-900 rounded-3xl p-8 border space-y-8">
+            <div>
+              <h3 className="font-bold text-2xl mb-6 flex items-center gap-3"><Calendar className="text-[#003087]" /> Próximos Eventos</h3>
+              {proximosEventos.map((evt, i) => (
+                <div key={i} className="flex gap-6 border-l-4 border-[#FF9F1C] pl-6 py-3">
+                  <div className="text-sm font-medium text-[#FF9F1C] min-w-[80px]">{evt.data}</div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">{e.title}</p>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">{e.type}</span>
+                    <p className="font-semibold">{evt.title}</p>
+                    <p className="text-sm text-zinc-500">{evt.local}</p>
                   </div>
                 </div>
               ))}
             </div>
-            {/* Past Events */}
-            <div className="border-t border-border px-6 py-4">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <Clock className="w-3 h-3" /> Eventos Passados
-              </h4>
-              {pastEvents.map((e, i) => (
-                <div key={i} className="py-2">
-                  <p className="text-xs font-medium text-foreground">{e.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{e.date}</p>
+
+            <div>
+              <h3 className="font-bold text-2xl mb-4 flex items-center gap-3"><Mic className="text-purple-600" /> HR Talks</h3>
+              {hrTalks.map((talk, i) => (
+                <div key={i} className="flex justify-between items-center py-3 border-t">
+                  <div>
+                    <p className="font-medium">{talk.title}</p>
+                    <p className="text-sm text-zinc-500">Com {talk.speaker}</p>
+                  </div>
+                  <button className="text-xs bg-purple-100 text-purple-700 px-4 py-2 rounded-full hover:bg-purple-200">Inscrever</button>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Document Repository */}
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="bg-primary/5 px-6 py-4 border-b border-border">
-              <h3 className="font-heading font-bold text-foreground flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary" /> Repositório de Documentos
-              </h3>
+          {/* Parada de Segurança */}
+          <div className="lg:col-span-3 bg-gradient-to-br from-red-50 to-orange-50 dark:from-zinc-900 dark:to-red-950 border border-red-200 rounded-3xl p-8 flex flex-col">
+            <div className="flex items-center gap-3 mb-6">
+              <AlertTriangle className="text-red-600 w-8 h-8" />
+              <h3 className="font-bold text-2xl">Parada de Segurança</h3>
             </div>
-            <div className="p-4">
-              <div className="relative mb-4">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="Pesquisar documentos..."
-                  value={docSearch}
-                  onChange={e => setDocSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              <div className="space-y-1.5">
-                {filteredDocs.map((d, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                        d.type === "PDF" ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"
-                      }`}>
-                        {d.type}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{d.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{d.size}</p>
-                      </div>
-                    </div>
-                    <Download className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Newsletters & Links */}
-          <div className="space-y-6">
-            {/* Newsletters */}
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="bg-primary/5 px-6 py-4 border-b border-border">
-                <h3 className="font-heading font-bold text-foreground flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-primary" /> Newsletters
-                </h3>
-              </div>
-              <div className="p-4 space-y-2">
-                {newsletters.map((n, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{n.title}</p>
-                      <p className="text-[10px] text-muted-foreground">{n.date} · {n.size}</p>
-                    </div>
-                    <Download className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Links vertical menu */}
-            <div className="bg-card rounded-xl border border-border overflow-hidden">
-              <div className="bg-secondary/10 px-6 py-4 border-b border-border">
-                <h3 className="font-heading font-bold text-foreground flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-secondary-foreground" /> Links Úteis
-                </h3>
-              </div>
-              <div className="p-2">
-                {[
-                  { label: "Portal de Auto-Serviço", icon: Users },
-                  { label: "Avaliação de Desempenho", icon: ClipboardCheck },
-                  { label: "Tabela de Funções", icon: Table2 },
-                  { label: "Calendário de Férias", icon: CalendarDays },
-                  { label: "Contacto de TI", icon: Mail },
-                ].map((link, i) => {
-                  const Icon = link.icon;
-                  return (
-                    <button key={i} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors text-left">
-                      <Icon className="w-4 h-4 text-primary shrink-0" />
-                      <span className="text-sm font-medium text-foreground">{link.label}</span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <p className="font-semibold text-lg">{safetyStandDown.title}</p>
+            <p className="text-red-700 dark:text-red-400 mt-1">{safetyStandDown.tema}</p>
+            <p className="mt-4 text-sm">{safetyStandDown.data}</p>
+            <p className="mt-auto text-sm italic">{safetyStandDown.descricao}</p>
+            <button className="mt-8 bg-red-600 hover:bg-red-700 text-white py-3 rounded-2xl font-medium">Confirmar Participação</button>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="bg-primary/5 rounded-xl p-6 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-heading font-bold text-foreground">Electricidade de Moçambique, E.P.</p>
-            <p className="text-xs text-muted-foreground mt-1">Intranet Corporativa — PeopleHub © 2026</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
-              <Zap className="w-5 h-5 text-secondary-foreground" />
+        {/* Colaboradores Próximos à Reforma */}
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border">
+          <div className="flex items-center gap-3 mb-8">
+            <UserMinus className="text-amber-600 w-8 h-8" />
+            <div>
+              <h3 className="font-bold text-2xl">Colaboradores Próximos à Reforma</h3>
+              <p className="text-sm text-zinc-500">Acompanhe e prepare a sucessão com antecedência</p>
             </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {proximosReforma.map((col, i) => (
+              <div key={i} className="border-l-4 border-amber-500 pl-6 py-2 bg-amber-50 dark:bg-zinc-800 rounded-r-2xl">
+                <p className="font-semibold">{col.nome}</p>
+                <p className="text-sm text-zinc-600">{col.departamento} • {col.idade}</p>
+                <p className="text-xs text-amber-700 mt-1">Reforma prevista: {col.data}</p>
+                <div className="mt-4 text-xs bg-white dark:bg-zinc-700 px-4 py-2 rounded-lg inline-block">
+                  {col.status}
+                </div>
+                <button className="mt-4 text-xs text-amber-600 flex items-center gap-1 hover:underline">Iniciar plano de sucessão <ArrowRight className="w-4 h-4" /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Trabalhos em Andamento + Dicas */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border">
+            <h3 className="font-bold text-2xl mb-6 flex items-center gap-3"><Target className="text-[#FF9F1C]" /> Trabalhos em Andamento</h3>
+            <div className="space-y-7">
+              {trabalhosAndamento.map((item, i) => (
+                <div key={i} className="flex items-center justify-between border-b pb-6 last:border-0">
+                  <div>
+                    <p className="font-medium">{item.titulo}</p>
+                    <p className="text-sm text-zinc-500">Por: {item.responsavel}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-4 py-1 text-xs rounded-full bg-blue-100 text-blue-700">{item.estado}</span>
+                    <div className="mt-3 h-2 bg-zinc-200 rounded-full w-32 overflow-hidden">
+                      <div className="h-full bg-[#FF9F1C]" style={{ width: `${item.progresso}%` }} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border">
+            <h3 className="font-bold text-2xl mb-6 flex items-center gap-3"><Shield className="text-emerald-600" /> Dicas de Segurança & Bem-Estar</h3>
+            <ul className="space-y-5">
+              {[
+                "Faça pausas ativas a cada 90 minutos para alongamento",
+                "Mantenha a sua password forte e ativa a autenticação de dois fatores",
+                "Reporte qualquer risco de segurança imediatamente",
+                "Pratique gratidão diária para melhorar o bem-estar emocional",
+              ].map((dica, i) => (
+                <li key={i} className="flex gap-4">
+                  <Lightbulb className="w-5 h-5 text-emerald-600 mt-1 flex-shrink-0" />
+                  <p>{dica}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Employee Voice + Leave Donation + Newsletters */}
+
+        
+        <div className="grid lg:grid-cols-3 gap-8">
+         
+
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border">
+            <h3 className="font-bold text-xl mb-6">Employee Voice</h3>
+            {employeeVoice.map((msg, i) => (
+              <div key={i} className="italic border-l-4 border-zinc-300 pl-5 py-3 text-sm">“{msg}”</div>
+            ))}
+          </div>
+
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 border">
+            <h3 className="font-bold text-2xl mb-6 flex items-center gap-3"><Mail className="text-sky-600" /> Newsletters</h3>
+            {[
+              { title: "PeopleHub Newsletter – Março 2026", date: "30 Mar 2026" },
+              { title: "Bem-Estar no Trabalho: Edição Especial", date: "18 Mar 2026" },
+            ].map((nl, i) => (
+              <a key={i} href="#" className="block py-4 border-b last:border-0 hover:text-[#FF9F1C]">
+                <p className="font-medium">{nl.title}</p>
+                <p className="text-xs text-zinc-500">{nl.date}</p>
+              </a>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-[#003087] text-white/80 py-12">
+        <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-3 gap-8 text-center md:text-left">
+          <div>
+            <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+              <Users className="w-9 h-9 text-[#FF9F1C]" />
+              <span className="font-bold text-3xl">PeopleHub</span>
+            </div>
+            <p className="text-sm">Recursos Humanos • Electricidade de Moçambique, E.P.</p>
+          </div>
+          <div className="text-sm">© 2026 EDM • Versão 2.3 • Março 2026</div>
+          <div className="text-sm md:text-right">
+            Suporte RH: ext. 1200<br />
+            Bem-Estar: ext. 1210<br />
+            rh@edm.co.mz
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
+
 
 export default Intranet;
