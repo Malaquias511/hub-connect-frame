@@ -12,7 +12,7 @@ import Leave from "./pages/Leave";
 import Evaluations from "./pages/Evaluations";
 import HRPortal from "./pages/HRPortal";
 import Intranet from "./pages/Intranet";
-import Intra from "./pages/intra";
+import Intra from "./pages/Intra";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import PortalDocumentacao from "./pages/doc";
